@@ -5,13 +5,16 @@ import java.net.InetAddress
 import java.nio.file.{Files, Path, Paths}
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.language.higherKinds
 
 /**
   * Created by vladislav.molchanov on 16.02.2016.
   */
-object Main extends {
+object Main2 extends {
+
+  class NetworkInterval(begin: Double, end: Double, val networkName: String) extends Interval(begin, end)
 
   def main(args: Array[String]) {
 
@@ -21,26 +24,29 @@ object Main extends {
     val transactionsSource = readResource("/transactions.tsv")
     val transactionsLines: Iterator[String] = transactionsSource.getLines()
 
-    val transactions: Map[String, List[String]] = transactionsLines.map(_.split("\t"))
+    val transactions = transactionsLines.map(_.split("\t"))
       .foldLeft(mutable.Map[String, List[String]]().withDefaultValue(Nil))((accMap, splitted) => {
         val userId = splitted(0)
         val ip = splitted(1)
         accMap(userId) = ip :: accMap(userId)
         accMap
-      }).toMap
+      }).toMap.par
 
     val rangesSource = readResource("/ranges.tsv")
     val rangesLines: Iterator[String] = rangesSource.getLines()
 
     val ranges = rangesLines.map(_.split("-|\t"))
-      .foldLeft(mutable.Map[String, List[(String, String)]]().withDefaultValue(Nil))((accMap, splitted) => {
+      .foldLeft(List[NetworkInterval]())((acc, splitted) => {
         val rangeBegin: String = splitted(0)
         val rangeEnd: String = splitted(1)
         val networkName = splitted(2)
+        val res: List[NetworkInterval] = new NetworkInterval(rangeBegin.toDouble, rangeEnd.toDouble, networkName) :: acc
+        res
+      })
 
-        accMap(networkName) = (rangeBegin, rangeEnd) :: accMap(networkName)
-        accMap
-      }).toMap.par
+    val tree = IntervalTree(ranges)
+
+    //    val tree: IntervalTree = IntervalTree()
 
     println("ranges splitted")
 
@@ -51,15 +57,13 @@ object Main extends {
       Files.createFile(output)
     }
 
-    SimpleARM(Files.newBufferedWriter(output))(writer => {
+    SimpleARM2(Files.newBufferedWriter(output))(writer => {
       for {
         (userId, ips) <- transactions
-        (network, r) <- ranges
-        (start, end) <- r
-        ip <- ips if isValidRange(start, end, ip)
+        ip <- ips
+        interval <- tree.findContainingIntervals(ip.toDouble)
       } {
-        writer.write(s"$userId\t$network")
-        writer.newLine()
+        writer.write(s"$userId\t${interval.networkName}\n")
       }
     })
   }
@@ -82,7 +86,7 @@ object Main extends {
   }
 }
 
-object SimpleARM {
+object SimpleARM2 {
   def apply[T <: Closeable, Q](c: T)(f: (T) => Q): Q = {
     try {
       f(c)
