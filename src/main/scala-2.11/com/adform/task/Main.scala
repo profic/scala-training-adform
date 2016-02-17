@@ -40,7 +40,7 @@ object Main extends {
 
         accMap(networkName) = (rangeBegin, rangeEnd) :: accMap(networkName)
         accMap
-      }).toMap.par
+      }).toMap
 
     println("ranges splitted")
 

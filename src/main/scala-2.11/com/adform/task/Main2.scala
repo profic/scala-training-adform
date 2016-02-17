@@ -5,7 +5,6 @@ import java.net.InetAddress
 import java.nio.file.{Files, Path, Paths}
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.language.higherKinds
 
@@ -40,15 +39,22 @@ object Main2 extends {
         val rangeBegin: String = splitted(0)
         val rangeEnd: String = splitted(1)
         val networkName = splitted(2)
-        val res: List[NetworkInterval] = new NetworkInterval(rangeBegin.toDouble, rangeEnd.toDouble, networkName) :: acc
+        val res: List[NetworkInterval] = new NetworkInterval(ipToLong(InetAddress.getByName(rangeBegin)), ipToLong(InetAddress.getByName(rangeEnd)), networkName) :: acc
         res
       })
 
-    val tree = IntervalTree(ranges)
+    println("ranges splitted")
+
+    // todo:improve
+    implicit val ord:Ordering[NetworkInterval] = new Ordering[NetworkInterval] {
+      override def compare(x: NetworkInterval, y: NetworkInterval): Int = IntervalTree.intervalOrd.compare(x, y)
+    }
+
+    val tree:IntervalTree[NetworkInterval] = IntervalTree(ranges)
 
     //    val tree: IntervalTree = IntervalTree()
 
-    println("ranges splitted")
+    println("tree builded")
 
     val path: Path = Paths.get(getPath("/"))
 
@@ -61,7 +67,7 @@ object Main2 extends {
       for {
         (userId, ips) <- transactions
         ip <- ips
-        interval <- tree.findContainingIntervals(ip.toDouble)
+        interval <- tree.findContainingIntervals(ipToLong(InetAddress.getByName(ip)))
       } {
         writer.write(s"$userId\t${interval.networkName}\n")
       }
