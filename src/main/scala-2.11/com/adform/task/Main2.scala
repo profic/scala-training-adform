@@ -4,6 +4,8 @@ import java.io.Closeable
 import java.net.InetAddress
 import java.nio.file.{Files, Path, Paths}
 
+import com.adform.task.intervalTree1.Interval
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.higherKinds
@@ -47,10 +49,10 @@ object Main2 extends {
 
     // todo:improve
     implicit val ord:Ordering[NetworkInterval] = new Ordering[NetworkInterval] {
-      override def compare(x: NetworkInterval, y: NetworkInterval): Int = IntervalTree.intervalOrd.compare(x, y)
+      override def compare(x: NetworkInterval, y: NetworkInterval): Int = intervalTree1.IntervalTree.intervalOrd.compare(x, y)
     }
 
-    val tree:IntervalTree[NetworkInterval] = IntervalTree(ranges)
+    val tree = intervalTree1.IntervalTree(ranges)
 
     //    val tree: IntervalTree = IntervalTree()
 

@@ -1,8 +1,6 @@
-package com.adform.task
+package com.adform.task.intervalTree1
 
 import java.lang.Double.NEGATIVE_INFINITY
-
-import IntervalTree._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -28,7 +26,7 @@ object IntervalTree {
 //  }
 
   // todo:improve
-  def apply[I <: Interval](intervals: List[I])(implicit ord: Ordering[I]):IntervalTree[I] = new IntervalTree(intervals)
+  def apply[I <: Interval](intervals: List[I])(implicit ord: Ordering[I]) = new IntervalTree(intervals)
 
 }
 
