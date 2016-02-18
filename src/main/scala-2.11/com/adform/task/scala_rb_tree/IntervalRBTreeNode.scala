@@ -4,16 +4,19 @@ package com.adform.task.scala_rb_tree
   * Created by vladislav.molchanov on 18.02.2016.
   */
 class IntervalRBTreeNode[E](color: Color,
-                            value: Interval[E],
+                            value: E,
+                            begin: Int,
+                            end: Int,
                             left: RBTree[Interval[E]],
-                            right: RBTree[Interval[E]]) extends RBNode[Interval[E]](color, value, left, right) {
+                            right: RBTree[Interval[E]]) extends RBNode[Interval[E]](color, Interval(begin, end, value), left, right) {
+
   override protected def make(color: Color, elem: Interval[E], left: RBTree[Interval[E]], right: RBTree[Interval[E]]): RBTree[Interval[E]] = {
-    new IntervalRBTreeNode(color, elem, left, right)
+    super.make(color, elem, left, right)
   }
 }
 
 
-case class Interval[E](begin: Int, end: Int, data: E)(implicit ev: E => Ordered[E] /*todo: look at <:< in Predef*/) extends Ordered[Interval[E]] {
+case class Interval[E](begin: Int, end: Int, data: E) extends Ordered[Interval[E]] {
 
   override def compare(that: Interval[E]): Int = this.begin compare that.begin
 

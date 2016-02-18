@@ -34,7 +34,7 @@ abstract /*sealed*/ class RBTree[E <% Ordered[E]] {
   def add(elem: E): RBTree[E] = {
 
     def balancedAdd(tree: RBTree[E]): RBTree[E] =
-      if (tree.isEmpty) make(R, elem, tree, empty[E])
+      if (tree.isEmpty) make(R, elem)
       else if (elem < tree.value) balanceLeft(tree.color, tree.value, balancedAdd(tree.left), tree.right)
       else if (elem > tree.value) balanceRight(tree.color, tree.value, tree.left, balancedAdd(tree.right))
       else tree
@@ -72,10 +72,10 @@ abstract /*sealed*/ class RBTree[E <% Ordered[E]] {
   def fail(m: String) = throw new NoSuchElementException(m)
 }
 
-case class RBNode[E <% Ordered[E]](color: Color,
+case class RBNode[E](color: Color,
                                    value: E,
                                    left: RBTree[E],
-                                   right: RBTree[E]) extends RBTree[E] {
+                                   right: RBTree[E])(implicit ev$1: E => Ordered[E]) extends RBTree[E] {
   def isEmpty = false
 }
 
