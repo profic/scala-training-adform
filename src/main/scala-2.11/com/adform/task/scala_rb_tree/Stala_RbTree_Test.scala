@@ -1,7 +1,5 @@
 package com.adform.task.scala_rb_tree
 
-import scala.collection.immutable.TreeSet
-
 
 /**
   * Created by vladislav.molchanov on 18.02.2016.
@@ -9,10 +7,13 @@ import scala.collection.immutable.TreeSet
 object Stala_RbTree_Test {
 
   def main(args: Array[String]) {
-    val tree = RBTree(1, 2, 3, 4, 5, 6, 7)
+    val tree: RBTree[String] = RBTree(
+      Interval(1, 10, "111"),
+      Interval(5, 11, "222"),
+      Interval(1, 4, "333"),
+      Interval(6, 9, "444")
+    )
 
     println(tree)
-
-
   }
 }

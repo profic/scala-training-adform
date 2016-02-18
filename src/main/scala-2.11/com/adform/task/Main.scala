@@ -4,6 +4,8 @@ import java.io.Closeable
 import java.net.InetAddress
 import java.nio.file.{Files, Path, Paths}
 
+import com.adform.task.scala_rb_tree.{Interval, RBTree}
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.higherKinds
@@ -32,15 +34,25 @@ object Main extends {
     val rangesSource = readResource("/ranges.tsv")
     val rangesLines: Iterator[String] = rangesSource.getLines()
 
+    //    val ranges = rangesLines.map(_.split("-|\t"))
+    //      .foldLeft(mutable.Map[String, List[(String, String)]]().withDefaultValue(Nil))((accMap, splitted) => {
+    //        val rangeBegin: String = splitted(0)
+    //        val rangeEnd: String = splitted(1)
+    //        val networkName = splitted(2)
+    //
+    //        accMap(networkName) = (rangeBegin, rangeEnd) :: accMap(networkName)
+    //        accMap
+    //      }).toMap
+
     val ranges = rangesLines.map(_.split("-|\t"))
-      .foldLeft(mutable.Map[String, List[(String, String)]]().withDefaultValue(Nil))((accMap, splitted) => {
-        val rangeBegin: String = splitted(0)
-        val rangeEnd: String = splitted(1)
+      .foldLeft(RBTree[String]())((tree, splitted) => {
+
+        val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
+        val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
         val networkName = splitted(2)
 
-        accMap(networkName) = (rangeBegin, rangeEnd) :: accMap(networkName)
-        accMap
-      }).toMap
+        tree.add(Interval(rangeBegin, rangeEnd, networkName))
+      })
 
     println("ranges splitted")
 
@@ -51,17 +63,17 @@ object Main extends {
       Files.createFile(output)
     }
 
-    SimpleARM(Files.newBufferedWriter(output))(writer => {
-      for {
-        (userId, ips) <- transactions
-        (network, r) <- ranges
-        (start, end) <- r
-        ip <- ips if isValidRange(start, end, ip)
-      } {
-        writer.write(s"$userId\t$network")
-        writer.newLine()
-      }
-    })
+//    SimpleARM(Files.newBufferedWriter(output))(writer => {
+//      for {
+//        (userId, ips) <- transactions
+//        (network, r) <- ranges
+//        (start, end) <- r
+//        ip <- ips if isValidRange(start, end, ip)
+//      } {
+//        writer.write(s"$userId\t$network")
+//        writer.newLine()
+//      }
+//    })
   }
 
   private def ipToLong(ip: InetAddress): Long = {
