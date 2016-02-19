@@ -34,6 +34,11 @@ import java.util.List;
 
 public class IntervalTree extends RBTree {
 
+    int lookupCnt = 0;
+
+    public int getLookupCnt() {
+        return lookupCnt;
+    }
 
     private Comparator endpointComparator;
 
@@ -55,6 +60,9 @@ public class IntervalTree extends RBTree {
      guaranteed that these nodes will be returned sorted by
      increasing low endpoint. */
     public List<IntervalNode> findAllNodesIntersecting(Interval interval) {
+
+        lookupCnt = 0;
+
         List<IntervalNode> retList = new ArrayList<IntervalNode>();
         searchForIntersectingNodesFrom((IntervalNode) getRoot(), interval, retList);
         return retList;
@@ -88,6 +96,9 @@ public class IntervalTree extends RBTree {
     private void searchForIntersectingNodesFrom(IntervalNode node,
                                                 Interval interval,
                                                 List<IntervalNode> resultList) {
+
+        lookupCnt++;
+
         if (node == null) {
             return;
         }

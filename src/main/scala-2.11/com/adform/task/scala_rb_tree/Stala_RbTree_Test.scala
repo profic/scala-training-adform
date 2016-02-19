@@ -1,6 +1,6 @@
 package com.adform.task.scala_rb_tree
 
-import com.adform.task.Main
+//import com.adform.task.Main
 
 
 /**
@@ -10,13 +10,20 @@ object Stala_RbTree_Test {
 
   def main(args: Array[String]) {
 
-    val tree: RBTree[String] = RBTree(
-      Interval(1, 10, "111"),
-      Interval(5, 11, "222"),
-      Interval(1, 4, "333"),
-      Interval(6, 9, "444")
-    )
+//    val tree: RBTree[String] = RBTree(
+//      Interval(5, 1, "111"),
+//      Interval(46, 11, "222")
+//      Interval(3, 4, "333"),
+//      Interval(6, 9, "444")*/
+//    )
+    val tree: Tree[Int] = Tree(5,4,6,7)
 
-    println(Main.search(tree, 4))
+//    println(Main.search(tree, 4))
   }
 }
+/*
+1 - 2
+2 - 5
+3 - 11
+
+*/
