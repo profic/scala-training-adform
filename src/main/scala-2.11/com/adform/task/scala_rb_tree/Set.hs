@@ -49,21 +49,16 @@ insert x s = makeBlack (ins s)
                         | x > y  = balance color a y (ins b)
     makeBlack (T _ a y b) = T B a y b
 
-balance :: Color -> Tree elt -> elt -> Tree elt -> Tree elt
-balance B (T R (T R a x b) y c) z d = T R (T B a x b) y (T B c z d)
-balance B (T R a x (T R b y c)) z d = T R (T B a x b) y (T B c z d)
-balance B a x (T R (T R b y c) z d) = T R (T B a x b) y (T B c z d)
-balance B a x (T R b y (T R c z d)) = T R (T B a x b) y (T B c z d)
-balance color a x b                 = T color a x b
+balance B (T R a (T R _ _ _) x b) y (T R c z d)
+                        | B (T R a x b (T R _ _ _)) y (T R c z d)
+                        | B (T R a x b) y (T R c (T R _ _ _) z d)
+                        | B (T R a x b) y (T R c z d (T R _ _ _)) = T R (T B a x b) y (T B c z d)
 
-balance B (T R a (T R _ _ _) x b) y (T R c z d) | B (T R a x b (T R _ _ _)) y (T R c z d)
-                                                | B (T R a x b) y (T R c (T R _ _ _) z d)
-                                                | B (T R a x b) y (T R c z d (T R _ _ _)) = T R (T B a x b) y (T B c z d)
--- color flip balance B (T R a (T R _ _ _) x b) y c = T B a x (T R b y c)
+-- color flip
+balance B (T R a (T R _ _ _) x b) y c = T B a x (T R b y c)
 balance B a x (T R b y c (T R _ _ _)) = T B (T R a x b) y c
 -- single rotation
-balance B (T R a x (T R b y c)) z d
-| B a x (T R (T R b y c) z d) = T B (T R a x b) y (T R c z d)
+balance B (T R a x (T R b y c)) z d | B a x (T R (T R b y c) z d) = T B (T R a x b) y (T R c z d)
 -- double rotation
 balance color a x b = T color a x b
 
@@ -114,11 +109,11 @@ balance color a x b = T color a x b
 --  where
 --    add Leaf = RBTree Red Leaf elem Leaf
 --    add (RBTree color left thisVal right)
---                        | elem < thisVal  = balance color (add left) thisVal right
---                        | elem == thisVal = RBTree color left thisVal right
---                        | elem > thisVal  = balance color left thisVal (add right)
---    makeBlack (RBTree _ left thisVal right) = RBTree Black left thisVal right
---
+                        | elem < thisVal  = balance color (add left) thisVal right
+                        | elem == thisVal = RBTree color left thisVal right
+                        | elem > thisVal  = balance color left thisVal (add right)
+    makeBlack (RBTree _ left thisVal right) = RBTree Black left thisVal right
+
 --balance :: Color -> Tree T -> T -> Tree T -> Tree T
 --balance Black (RBTree Red (RBTree Red left thisVal right) y c) z d = RBTree Red (RBTree Black left thisVal right) y (RBTree Black c z d)
 --balance Black (RBTree Red left thisVal (RBTree Red right y c)) z d = RBTree Red (RBTree Black left thisVal right) y (RBTree Black c z d)
