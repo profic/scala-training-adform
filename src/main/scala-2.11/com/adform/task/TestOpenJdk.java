@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -25,6 +26,8 @@ public class TestOpenJdk {
                 return o1.compareTo(o2);
             }
         });
+
+        List<Object> s = new ArrayList<>(Arrays.asList(1,2));
 
         tree.insert(new Interval(1, 4), "");
         tree.insert(new Interval(4, 11), "");
