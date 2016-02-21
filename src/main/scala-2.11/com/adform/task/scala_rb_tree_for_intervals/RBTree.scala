@@ -14,8 +14,6 @@ case object B extends Color
 
 abstract sealed class Tree[A, Key <% Ordered[Key]] {
 
-  var lookup: Int = 0
-
   type T = Tree[A, Key]
 
   type I = Interval[A, Key]
@@ -43,12 +41,6 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
     }
 
     def loop(tree: Tree[A, Key], acc: List[A]): List[A] = {
-
-      lookup += 1
-
-      ////      case Tree(_,v, l, r)  ⇒ acc
-      //      case _ ⇒ acc
-      //    }
 
       if (tree == Leaf) acc
       else {

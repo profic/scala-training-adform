@@ -1,6 +1,6 @@
 package com.adform.task
 
-import java.io.Closeable
+import java.io._
 import java.net.InetAddress
 import java.nio.file.{Files, Path, Paths}
 
@@ -19,7 +19,8 @@ object Main extends {
   def main(args: Array[String]) {
 
     //    bruteForce()
-//    tree()
+    //    tree()
+
 
     val rangesSource = readResource("/ranges copy.tsv")
     val rangesLines = rangesSource.getLines().toList
@@ -34,15 +35,16 @@ object Main extends {
         tree.add(Interval(rangeBegin, rangeEnd, networkName))
       })
 
-    val start: Long = System.currentTimeMillis()
+    val start: Long = System.nanoTime()
 
     val res: List[String] = ranges.search(ipToLong(InetAddress.getByName("92.173.0.104")))
 
-    print(System.currentTimeMillis() - start)
+    print(System.nanoTime() - start)
 
   }
 
   def getPath(path: String) = getClass.getResource(path).toURI
+
   def readResource(path: String): Source = Source.fromFile(getPath(path))
 
   def tree() = {

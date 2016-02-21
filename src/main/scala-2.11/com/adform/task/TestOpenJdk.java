@@ -58,9 +58,9 @@ public class TestOpenJdk {
 
         Long key = ipToLong(InetAddress.getByName("92.173.0.104"));
 
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
         List<IntervalNode> res = tree.findAllNodesIntersecting(new Interval(key, key));
-        System.out.println(System.currentTimeMillis() - start);
+        System.out.println(System.nanoTime() - start);
 //        System.out.println(tree.getLookupCnt());
     }
 
