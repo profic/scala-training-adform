@@ -25,6 +25,8 @@ object Main extends {
     val rangesSource = readResource("/ranges copy.tsv")
     val rangesLines = rangesSource.getLines().toList
 
+    println(rangesLines.size)
+
     val ranges = rangesLines.map(_.split("-|\t"))
       .foldLeft(Tree[String, Long]())((tree, splitted) => {
 
@@ -37,9 +39,17 @@ object Main extends {
 
     val start: Long = System.nanoTime()
 
-    val res: List[String] = ranges.search(ipToLong(InetAddress.getByName("92.173.0.104")))
+    val ip: Long = ipToLong(InetAddress.getByName("92.173.0.104"))
 
+    var i = 0
+//    while(i < 10000000) {
+      val res: java.util.ArrayList[String] = ranges.search(ip)
+      i += 1
+//    }
+
+    println(ranges.cnt)
     print(System.nanoTime() - start)
+
 
   }
 
@@ -84,15 +94,15 @@ object Main extends {
       Files.createFile(output)
     }
 
-    SimpleARM(Files.newBufferedWriter(output))(writer => {
-      for {
-        (userId, ips) <- transactions
-        ip <- ips
-        network ← ranges.search(ipToLong(InetAddress.getByName(ip)))
-      } {
-        writer.write(s"$userId\t$network\n")
-      }
-    })
+//    SimpleARM(Files.newBufferedWriter(output))(writer => {
+//      for {
+//        (userId, ips) <- transactions
+//        ip <- ips
+//        network ← ranges.search(ipToLong(InetAddress.getByName(ip)))
+//      } {
+//        writer.write(s"$userId\t$network\n")
+//      }
+//    })
   }
 
   def bruteForce() = {

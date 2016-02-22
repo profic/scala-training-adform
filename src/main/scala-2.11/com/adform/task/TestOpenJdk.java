@@ -62,9 +62,11 @@ public class TestOpenJdk {
         Long key = ipToLong(InetAddress.getByName("92.173.0.104"));
 
         long start = System.nanoTime();
-        List<IntervalNode> res = tree.findAllNodesIntersecting(new Interval(key, key));
+//        for (int i = 0; i < 10000000; i++) {
+            List<IntervalNode> res = tree.findAllNodesIntersecting(new Interval(key, key));
+//        }
         System.out.println(System.nanoTime() - start);
-//        System.out.println(tree.getLookupCnt());
+        System.out.println(tree.getLookupCnt());
     }
 
     private static Long ipToLong(InetAddress ip) {

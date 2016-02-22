@@ -1,6 +1,10 @@
 package com.adform.task.scala_rb_tree_for_intervals
 
+import java.util
+
 import scala.language.implicitConversions
+
+import collection.JavaConversions._
 
 abstract sealed class Color
 
@@ -18,6 +22,8 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
 
   type I = Interval[A, Key]
 
+  var cnt = 0
+
   def min: Key
 
   def max: Key
@@ -32,7 +38,7 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
 
   def isEmpty: Boolean
 
-  def search(key: Key): List[A] = {
+  def search(key: Key): util.ArrayList[A] = {
 
     val ord = implicitly[Ordering[Key]]
 
@@ -40,17 +46,37 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
       ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
     }
 
-    def loop(tree: Tree[A, Key], acc: List[A]): List[A] = {
+    val as: util.ArrayList[A] = new util.ArrayList[A]()
 
-      if (tree == Leaf) acc
+    def loop(tree: Tree[A, Key]): Unit = {
+      cnt += 1
+
+      if (tree == Leaf) return
       else {
-        val rightRes = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left, acc) else acc
-        val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
-        val leftRes = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right, acc) else acc
-        rightRes ::: theesRes ::: leftRes
+        if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left)
+        if (overlaps(tree.value.begin, tree.value.end)) {
+          as.add(tree.value.data)
+        }
+        if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right)
+
       }
     }
-    loop(this, List())
+    loop(this)
+
+
+//    def loop(tree: Tree[A, Key], acc: List[A]): List[A] = {
+//      cnt += 1
+//
+//      if (tree == Leaf) acc
+//      else {
+//        val rightRes = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left, acc) else acc
+//        val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
+//        val leftRes = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right, acc) else acc
+//        rightRes ::: theesRes ::: leftRes
+//      }
+//    }
+//    loop(this, List())
+    as
   }
 
 

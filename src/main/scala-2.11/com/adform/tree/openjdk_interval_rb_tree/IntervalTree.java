@@ -115,7 +115,7 @@ public class IntervalTree extends RBTree {
 
         // Check for intersection with current node
         if (node.getInterval().overlaps(interval, endpointComparator)) {
-            resultList.add(node);
+            addToList(node, resultList);
         }
 
         // Check to see whether we have to traverse the left subtree
@@ -125,5 +125,9 @@ public class IntervalTree extends RBTree {
                         right.getMinEndpoint()) > 0)) {
             searchForIntersectingNodesFrom(right, interval, resultList);
         }
+    }
+
+    private void addToList(IntervalNode node, List<IntervalNode> resultList) {
+        resultList.add(node);
     }
 }

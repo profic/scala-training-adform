@@ -21,7 +21,7 @@ object RandomIpGenerator {
 
     val buf = new ArrayBuffer[String]()
 
-    for (i ← 1 to 1000000) {
+    for (i ← 1 to 200000) {
       val begin = generate
       val b0: Int = begin.head
       val b1: Int = begin(1)
