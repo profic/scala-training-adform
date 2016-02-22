@@ -66,7 +66,8 @@ public class TestOpenJdk {
             List<IntervalNode> res = tree.findAllNodesIntersecting(new Interval(key, key));
 //        }
         System.out.println(System.nanoTime() - start);
-        System.out.println(tree.getLookupCnt());
+//        System.out.println(tree.getLookupCnt());
+        System.out.println(res.size());
     }
 
     private static Long ipToLong(InetAddress ip) {

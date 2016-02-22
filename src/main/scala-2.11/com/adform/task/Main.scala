@@ -47,7 +47,7 @@ object Main extends {
       i += 1
 //    }
 
-    println(ranges.cnt)
+    println(res.size())
     print(System.nanoTime() - start)
 
 
