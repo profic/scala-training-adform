@@ -30,7 +30,8 @@ object Main extends {
       for {
         (userId, ips) <- transactions
         ip <- ips
-        network ← ranges.search(ip)
+//        network ← ranges.search(ip)
+        network ← ranges.search((begin,end) ⇒ ip >= begin && ip <= end)
       } {
         writer.write(s"$userId\t$network\n")
       }

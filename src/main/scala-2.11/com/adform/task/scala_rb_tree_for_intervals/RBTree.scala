@@ -35,12 +35,9 @@ abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
 
   def isEmpty: Boolean
 
-  def search(key: Key): List[A] = {
+  def search(f: (Key,Key) ⇒ Boolean): List[A] = {
 
     val ord = implicitly[Ordering[Key]]
-
-    def overlaps(a: Key, b: Key): Boolean =
-      ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
 
     def loop(acc: List[A], rest: List[Tree[A, Key]]): List[A] = {
 
@@ -49,9 +46,9 @@ abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
         case tree :: ts =>
 
           // ugly if-else because can't match on Leaf (invariant tree)
-          val _ts: List[Tree[A, Key]] = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) tree.left :: ts else ts
-          val _ts2: List[Tree[A, Key]] = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
-          val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
+          val _ts = if (tree.left != Leaf && f(tree.left.min, tree.left.max)) tree.left :: ts else ts
+          val _ts2 = if (tree.right != Leaf && f(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
+          val theesRes = if (f(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
           loop(theesRes, _ts2)
       }
     }
