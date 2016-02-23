@@ -1,6 +1,10 @@
 package com.adform.task;
 
 import com.adform.tree.openjdk_interval_rb_tree.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,51 +21,49 @@ import java.util.List;
  */
 public class TestOpenJdk {
 
-    public static void main(String[] args) throws Exception {
+    static IntervalTree tree;
+    static Long key;
 
-        IntervalTree tree = new IntervalTree(new Comparator<Comparable>() {
-            @Override
-            public int compare(Comparable o1, Comparable o2) {
-                return o1.compareTo(o2);
-            }
-        });
+    static {
+        try {
 
-        tree.insert(new Interval(1, 4), "");
-        tree.insert(new Interval(4, 11), "");
-        tree.insert(new Interval(5, 10), "");
-        tree.insert(new Interval(3, 9), "");
-        tree.insert(new Interval(2, 5), "");
-        tree.insert(new Interval(0, 12), "");
-        tree.findAllNodesIntersecting(new Interval(6, 6));
-        System.out.println(tree.getLookupCnt());
+            tree = new IntervalTree(new Comparator<Comparable>() {
+                @Override
+                public int compare(Comparable o1, Comparable o2) {
+                    return o1.compareTo(o2);
+                }
+            });
 
-        testIps();
+            Files.lines(Paths.get(TestOpenJdk.class.getResource("/ranges.tsv").toURI())).map(l -> l.split("-|\t")).forEach(arr -> {
+                try {
+                    long begin = ipToLong(InetAddress.getByName(arr[0]));
+                    long end = ipToLong(InetAddress.getByName(arr[1]));
+                    tree.insert(new Interval(begin, end), arr[2]);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            key = ipToLong(InetAddress.getByName("92.173.0.104"));
+
+            long start = System.nanoTime();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
-    private static void testIps() throws IOException, URISyntaxException {
-        IntervalTree tree = new IntervalTree(new Comparator<Comparable>() {
-            @Override
-            public int compare(Comparable o1, Comparable o2) {
-                return o1.compareTo(o2);
-            }
-        });
+    public static void main(String[] args) throws Exception {
+        Options opt = new OptionsBuilder()
+                .include(TestOpenJdk.class.getSimpleName())
+                .forks(1)
+                .build();
+        new Runner(opt).run();
+    }
 
-        Files.lines(Paths.get(TestOpenJdk.class.getResource("/ranges copy.tsv").toURI())).map(l -> l.split("-|\t")).forEach(arr -> {
-            try {
-                long begin = ipToLong(InetAddress.getByName(arr[0]));
-                long end = ipToLong(InetAddress.getByName(arr[1]));
-                tree.insert(new Interval(begin, end), arr[2]);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        Long key = ipToLong(InetAddress.getByName("92.173.0.104"));
-
-        long start = System.nanoTime();
+    @Benchmark
+    public static void doSearch() {
         List<IntervalNode> res = tree.findAllNodesIntersecting(new Interval(key, key));
-        System.out.println(System.nanoTime() - start);
-//        System.out.println(tree.getLookupCnt());
     }
 
     private static Long ipToLong(InetAddress ip) {

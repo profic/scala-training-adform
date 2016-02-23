@@ -21,7 +21,7 @@ object RandomIpGenerator {
 
     val buf = new ArrayBuffer[String]()
 
-    for (i ← 1 to 1000000) {
+    for (i ← 1 to 200000) {
       val begin = generate
       val b0: Int = begin.head
       val b1: Int = begin(1)
@@ -43,7 +43,7 @@ object RandomIpGenerator {
           else b0 :: b1 :: b2 :: end :: Nil
         }
       }
-      buf += s"${begin.mkString(".")}-${getEnd.mkString(".")}\tNetwork$i\n"
+      buf += s"${begin.mkString(".")}-${getEnd.mkString(".")}\tNetwork${i + 800000}\n"
     }
 
     SimpleARM(Files.newBufferedWriter(path))(w ⇒ {buf.foreach(w.write)})

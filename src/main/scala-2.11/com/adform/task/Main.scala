@@ -5,6 +5,7 @@ import java.net.InetAddress
 import java.nio.file.{Files, Path, Paths}
 
 import com.adform.task.scala_rb_tree_for_intervals.{Interval, Tree}
+import org.openjdk.jmh.annotations.Benchmark
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -14,33 +15,42 @@ import scala.language.higherKinds
 /**
   * Created by vladislav.molchanov on 16.02.2016.
   */
+class Bench {
+
+  @Benchmark
+  def doSearch(): Unit = {
+    Main.doSearch()
+  }
+}
+
 object Main extends {
+
+  println("initialized")
+
+  val ip = ipToLong(InetAddress.getByName("92.173.0.104"))
+
+  val rangesSource = readResource("/ranges.tsv")
+  val rangesLines = rangesSource.getLines().toList
+
+  val ranges = rangesLines.map(_.split("-|\t"))
+    .foldLeft(Tree[String, Long]())((tree, splitted) => {
+
+      val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
+      val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
+      val networkName = splitted(2)
+
+      tree.add(Interval(rangeBegin, rangeEnd, networkName))
+    })
 
   def main(args: Array[String]) {
 
     //    bruteForce()
     //    tree()
 
+  }
 
-    val rangesSource = readResource("/ranges copy.tsv")
-    val rangesLines = rangesSource.getLines().toList
-
-    val ranges = rangesLines.map(_.split("-|\t"))
-      .foldLeft(Tree[String, Long]())((tree, splitted) => {
-
-        val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
-        val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
-        val networkName = splitted(2)
-
-        tree.add(Interval(rangeBegin, rangeEnd, networkName))
-      })
-
-    val start: Long = System.nanoTime()
-
-    val res: List[String] = ranges.search(ipToLong(InetAddress.getByName("92.173.0.104")))
-
-    print(System.nanoTime() - start)
-
+  def doSearch(): Unit = {
+    ranges.search(ip)
   }
 
   def getPath(path: String) = getClass.getResource(path).toURI

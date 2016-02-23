@@ -14,6 +14,8 @@ case object B extends Color
 
 abstract sealed class Tree[A, Key <% Ordered[Key]] {
 
+  var loopCnt = 0
+
   type T = Tree[A, Key]
 
   type I = Interval[A, Key]
@@ -39,6 +41,25 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
     def overlaps(a: Key, b: Key): Boolean = {
       ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
     }
+
+    // JMH shows that using ArrayBuffer can speed up to 2x-3x times compare to List
+    /*
+        val as = new ArrayBuffer[A]()
+
+        def loop(tree: Tree[A, Key]): Unit = {
+
+          if (tree != Leaf) {
+            if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left)
+            if (overlaps(tree.value.begin, tree.value.end)) {
+              as += tree.value.data
+            }
+            if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right)
+          }
+        }
+        loop(this)
+
+        as.toList
+ */
 
     def loop(tree: Tree[A, Key], acc: List[A]): List[A] = {
 
@@ -111,13 +132,6 @@ case class T[A, Key](color: Color,
     val rightMax: Key = if (right != Leaf) ord.max(right.max, value.end) else value.end
     ord.max(leftMax, rightMax)
   }
-  //  val _max: I = (left != Leaf, right != Leaf) match {
-  //    case (true, true)  ⇒ ord.max(ord.max(left.max, value.end), ord.max(right.max, value.end))
-  //    case (true, false) ⇒ ord.max(left.max, value.end)
-  //    case (false, true) ⇒ ord.max(right.max, value.end)
-  //    case _             ⇒ value.end
-  //  }
-
 
   override def min: Key = _min
 

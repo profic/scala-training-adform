@@ -34,7 +34,7 @@ import java.util.List;
 
 public class IntervalTree extends RBTree {
 
-    int lookupCnt = 0;
+    public int lookupCnt = 0;
 
     public int getLookupCnt() {
         return lookupCnt;
