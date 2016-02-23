@@ -6,8 +6,6 @@ import java.nio.file.{Files, Path, Paths}
 
 import com.adform.task.scala_rb_tree_for_intervals.{Interval, Tree}
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.language.{higherKinds, implicitConversions}
 
@@ -61,12 +59,11 @@ object Main extends {
     val transactionsLines = readResource(transactionsPath).getLines()
 
     transactionsLines.map(_.split("\t"))
-      .foldLeft(mutable.Map[String, List[String]]().withDefaultValue(Nil))((accMap, splitted) => {
+      .foldLeft(Map[String, List[String]]().withDefaultValue(Nil))((accMap, splitted) => {
         val userId = splitted(0)
         val ip = splitted(1)
-        accMap(userId) = ip :: accMap(userId)
-        accMap
-      }).toMap
+        accMap + (userId -> (ip :: accMap(userId)))
+      })
   }
 
   implicit def ipToLong(ip: String): Long = {
