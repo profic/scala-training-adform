@@ -11,9 +11,6 @@ import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.language.{higherKinds, implicitConversions}
 
-/**
-  * Created by vladislav.molchanov on 16.02.2016.
-  */
 object Main extends {
 
   val transactionsPath = "/transactions.tsv"
@@ -22,37 +19,11 @@ object Main extends {
 
   def main(args: Array[String]) {
 
-    def getPath(path: String) = getClass.getResource(path).toURI
+    val transactions: Map[String, List[String]] = parseTransactions
 
-    def readResource(path: String): Source = Source.fromFile(getPath(path))
+    val ranges: Tree[String, Long] = parseRanges
 
-    val transactionsSource = readResource(transactionsPath)
-    val transactionsLines = transactionsSource.getLines().toList
-
-    val transactions: Map[String, List[String]] = transactionsLines.map(_.split("\t"))
-      .foldLeft(mutable.Map[String, List[String]]().withDefaultValue(Nil))((accMap, splitted) => {
-        val userId = splitted(0)
-        val ip = splitted(1)
-        accMap(userId) = ip :: accMap(userId)
-        accMap
-      }).toMap
-
-    val rangesSource = readResource(rangesPath)
-    val rangesLines = rangesSource.getLines().toList
-
-    val ranges = rangesLines.map(_.split("-|\t"))
-      .foldLeft(Tree[String, Long]())((tree, splitted) => {
-
-        val rangeBegin = splitted(0)
-        val rangeEnd = splitted(1)
-        val networkName = splitted(2)
-
-        tree.add(Interval(rangeBegin, rangeEnd, networkName))
-      })
-
-    val path: Path = Paths.get(getPath("/"))
-
-    val output = Paths.get(path.toString, outPath)
+    val output = Paths.get(Paths.get(getPath("/")).toString, outPath)
     if (Files.notExists(output)) {
       Files.createFile(output)
     }
@@ -66,8 +37,36 @@ object Main extends {
         writer.write(s"$userId\t$network\n")
       }
     })
+  }
 
+  private def getPath(path: String) = getClass.getResource(path).toURI
 
+  private def readResource(path: String): Source = Source.fromFile(getPath(path))
+
+  private def parseRanges: Tree[String, Long] = {
+    val rangesLines = readResource(rangesPath).getLines()
+
+    rangesLines.map(_.split("-|\t"))
+      .foldLeft(Tree[String, Long]())((tree, splitted) => {
+
+        val rangeBegin = splitted(0)
+        val rangeEnd = splitted(1)
+        val networkName = splitted(2)
+
+        tree.add(Interval(rangeBegin, rangeEnd, networkName))
+      })
+  }
+
+  private def parseTransactions: Map[String, List[String]] = {
+    val transactionsLines = readResource(transactionsPath).getLines()
+
+    transactionsLines.map(_.split("\t"))
+      .foldLeft(mutable.Map[String, List[String]]().withDefaultValue(Nil))((accMap, splitted) => {
+        val userId = splitted(0)
+        val ip = splitted(1)
+        accMap(userId) = ip :: accMap(userId)
+        accMap
+      }).toMap
   }
 
   implicit def ipToLong(ip: String): Long = {
