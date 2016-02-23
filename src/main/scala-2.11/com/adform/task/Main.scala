@@ -25,8 +25,22 @@ object Main extends {
   val rangesSource = readResource("/ranges.tsv")
   val rangesLines = rangesSource.getLines().toList
 
+  var rangesLinesSize = rangesLines.size
+
+  var i = 0
+
   val ranges = rangesLines.map(_.split("-|\t"))
     .foldLeft(Tree[String, Long]())((tree, splitted) => {
+
+//      if (i % 100000 == 0) {
+//        println(i)
+//      }
+//
+//      if (i == rangesLinesSize - 1) {
+//        Tree.start = true
+//      }
+//
+//      i += 1
 
       val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
       val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
@@ -42,6 +56,8 @@ object Main extends {
 
     //    bruteForce()
     //    tree()
+
+    println(Tree.creationCount)
 
   }
 
@@ -119,11 +135,11 @@ object Main extends {
 
   def readMutableMap() = {
     splittedTrans.foldLeft(mutable.Map[String, List[String]]().withDefaultValue(Nil))((accMap, splitted) => {
-        val userId = splitted(0)
-        val ip = splitted(1)
-        accMap(userId) = ip :: accMap(userId)
-        accMap
-      }).toMap
+      val userId = splitted(0)
+      val ip = splitted(1)
+      accMap(userId) = ip :: accMap(userId)
+      accMap
+    }).toMap
   }
 
   def readImmutableMap = {
