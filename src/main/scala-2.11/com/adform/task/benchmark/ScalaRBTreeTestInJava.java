@@ -1,4 +1,4 @@
-package com.adform.task.scala_rb_tree;
+package com.adform.task.benchmark;
 
 import com.adform.task.Main;
 import org.openjdk.jmh.annotations.Benchmark;

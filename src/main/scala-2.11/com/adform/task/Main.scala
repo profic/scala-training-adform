@@ -35,6 +35,9 @@ object Main extends {
       tree.add(Interval(rangeBegin, rangeEnd, networkName))
     })
 
+  val transactionsSource = readResource("/transactions.tsv")
+  val splittedTrans = transactionsSource.getLines().map(_.split("\t"))
+
   def main(args: Array[String]) {
 
     //    bruteForce()
@@ -114,9 +117,25 @@ object Main extends {
     })
   }
 
+  def readMutableMap() = {
+    splittedTrans.foldLeft(mutable.Map[String, List[String]]().withDefaultValue(Nil))((accMap, splitted) => {
+        val userId = splitted(0)
+        val ip = splitted(1)
+        accMap(userId) = ip :: accMap(userId)
+        accMap
+      }).toMap
+  }
+
+  def readImmutableMap = {
+    splittedTrans
+      .foldLeft(mutable.Map[String, List[String]]().withDefaultValue(Nil))((accMap, splitted) => {
+        val userId = splitted(0)
+        val ip = splitted(1)
+        accMap + (userId -> (ip :: accMap(userId)))
+      })
+  }
+
   def bruteForce() = {
-    def getPath(path: String) = getClass.getResource(path).toURI
-    def readResource(path: String): Source = Source.fromFile(getPath(path))
 
     val transactionsSource = readResource("/transactions.tsv")
     val transactionsLines = transactionsSource.getLines().toList
