@@ -1,5 +1,6 @@
 package com.adform.task.scala_rb_tree_for_intervals
 
+import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
 
 abstract sealed class Color
@@ -12,7 +13,7 @@ case object B extends Color
   * A Red-Black Tree.
   */
 
-abstract sealed class Tree[A, Key <% Ordered[Key]] {
+abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
 
   type T = Tree[A, Key]
 
@@ -40,6 +41,25 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
       ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
     }
 
+    // JMH shows that using ArrayBuffer can speed up to 2x-3x times compare to List
+    val as = new ArrayBuffer[A]()
+
+    def loop(tree: Tree[A, Key]): Unit = {
+
+      if (tree != Leaf) {
+        if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left)
+        if (overlaps(tree.value.begin, tree.value.end)) {
+          as += tree.value.data
+        }
+        if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right)
+      }
+    }
+    loop(this)
+
+    as.toList
+
+    // I keep it here to show how List can be used to accumulate values
+    /*
     def loop(tree: Tree[A, Key], acc: List[A]): List[A] = {
 
       if (tree == Leaf) acc
@@ -51,6 +71,7 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
       }
     }
     loop(this, List())
+    */
   }
 
 
@@ -111,13 +132,6 @@ case class T[A, Key](color: Color,
     val rightMax: Key = if (right != Leaf) ord.max(right.max, value.end) else value.end
     ord.max(leftMax, rightMax)
   }
-  //  val _max: I = (left != Leaf, right != Leaf) match {
-  //    case (true, true)  ⇒ ord.max(ord.max(left.max, value.end), ord.max(right.max, value.end))
-  //    case (true, false) ⇒ ord.max(left.max, value.end)
-  //    case (false, true) ⇒ ord.max(right.max, value.end)
-  //    case _             ⇒ value.end
-  //  }
-
 
   override def min: Key = _min
 
@@ -142,27 +156,8 @@ case object Leaf extends Tree[Nothing, Nothing] {
 
 object Tree {
 
-  def main(args: Array[String]) {
-
-    val tree12 = Tree(
-      Interval(1, 4, "1"),
-      Interval(4, 11, "2"),
-      Interval(5, 10, "3"),
-      Interval(3, 9, "4"),
-      Interval(2, 5, "5"),
-      Interval(0, 12, "6")
-    )
-
-    println(tree12.search(6))
-  }
-
-  def unapply[A, I](t: T[A, I]): Option[(Color, Interval[A, I], Tree[A, I], Tree[A, I])] = {
-    Some(t.color, t.value, t.left, t.right)
-  }
-
-
   def empty[A, Key](implicit ev: Key ⇒ Ordered[Key]): Tree[A, Key] =
-    Leaf.asInstanceOf[Tree[A, Key]]
+    Leaf.asInstanceOf[Tree[A, Key]] // since Tree is invariant
 
   def apply[A, Key](xs: Interval[A, Key]*)(implicit ev: Key ⇒ Ordered[Key]): Tree[A, Key] = {
     var r = empty[A, Key]
