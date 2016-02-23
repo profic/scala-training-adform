@@ -1,6 +1,5 @@
 package com.adform.task.scala_rb_tree_for_intervals
 
-import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
 
 abstract sealed class Color
@@ -37,47 +36,33 @@ abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
 
     val ord = implicitly[Ordering[Key]]
 
-    def overlaps(a: Key, b: Key): Boolean = {
+    def overlaps(a: Key, b: Key): Boolean =
       ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
-    }
 
-    // JMH shows that using ArrayBuffer can speed up to 2x-3x times compare to List
-    val as = new ArrayBuffer[A]()
+    def findMatchedChildren(tree: T, ts: List[T]): List[T] =
+      if (tree != Leaf && overlaps(tree.min, tree.max)) tree :: ts
+      else ts
 
-    def loop(tree: Tree[A, Key]): Unit = {
+    def loop(acc: List[A], rest: List[T]): List[A] = {
 
-      if (tree != Leaf) {
-        if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left)
-        if (overlaps(tree.value.begin, tree.value.end)) {
-          as += tree.value.data
-        }
-        if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right)
+      rest match {
+        case Nil        => acc
+        case tree :: ts =>
+          // ugly if-else because cant'n match Leaf (invariant tree)
+
+          val theesRes =
+            if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc
+            else acc
+
+          loop(theesRes, findMatchedChildren(tree.right, findMatchedChildren(tree.left, ts)))
       }
     }
-    loop(this)
-
-    as.toList
-
-    // I keep it here to show how List can be used to accumulate values
-    /*
-    def loop(tree: Tree[A, Key], acc: List[A]): List[A] = {
-
-      if (tree == Leaf) acc
-      else {
-        val rightRes = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left, acc) else acc
-        val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
-        val leftRes = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right, acc) else acc
-        rightRes ::: theesRes ::: leftRes
-      }
-    }
-    loop(this, List())
-    */
+    loop(List(), List(this))
   }
-
 
   def add(elem: I): T = {
 
-    def balancedAdd(t: Tree[A, Key]): Tree[A, Key] =
+    def balancedAdd(t: T): T =
       if (t.isEmpty) T(R, elem, t, t)
       else if (elem < t.value) balanceLeft(t.color, t.value, balancedAdd(t.left), t.right)
       else if (elem > t.value) balanceRight(t.color, t.value, t.left, balancedAdd(t.right))
