@@ -39,7 +39,9 @@ abstract sealed class Tree[A] {
       key.compare(a) >= 0 && key.compare(b) <= 0
     }
 
-    val as = new ArrayBuffer[A]()
+    // JMH shows that using ArrayBuffer can speed up to 2x-3x times compare to List
+
+    /*val as = new ArrayBuffer[A]()
 
     def loop(tree: Tree[A]): Unit = {
 
@@ -52,21 +54,18 @@ abstract sealed class Tree[A] {
       }
     }
     loop(this)
-
-
-    //    def loop(tree: Tree[A, Key], acc: List[A]): List[A] = {
-    //      cnt += 1
-    //
-    //      if (tree == Leaf) acc
-    //      else {
-    //        val rightRes = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left, acc) else acc
-    //        val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
-    //        val leftRes = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right, acc) else acc
-    //        rightRes ::: theesRes ::: leftRes
-    //      }
-    //    }
-    //    loop(this, List())
     as.toList
+*/
+    def loop(tree: Tree[A], acc: List[A]): List[A] = {
+      if (tree == Leaf) acc
+      else {
+        val rightRes = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left, acc) else acc
+        val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
+        val leftRes = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right, acc) else acc
+        rightRes ::: theesRes ::: leftRes
+      }
+    }
+    loop(this, List())
   }
 
 
