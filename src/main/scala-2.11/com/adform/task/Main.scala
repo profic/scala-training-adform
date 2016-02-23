@@ -30,8 +30,7 @@ object Main extends {
       for {
         (userId, ips) <- transactions
         ip <- ips
-//        network ← ranges.search(ip)
-        network ← ranges.search((begin,end) ⇒ ip >= begin && ip <= end)
+        network ← ranges.search((begin, end) ⇒ ip >= begin && ip <= end)
       } {
         writer.write(s"$userId\t$network\n")
       }
@@ -69,12 +68,8 @@ object Main extends {
 
   implicit def ipToLong(ip: String): Long = {
     val octets: Array[Byte] = InetAddress.getByName(ip).getAddress
-    var result: Long = 0
-    for (octet <- octets) {
-      result <<= 8
-      result |= octet & 0xff
-    }
-    result
+
+    octets.foldLeft(0L)((result, octet) ⇒ (result << 8) | octet & 0xff)
   }
 }
 
