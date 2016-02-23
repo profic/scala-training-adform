@@ -15,13 +15,6 @@ import scala.language.higherKinds
 /**
   * Created by vladislav.molchanov on 16.02.2016.
   */
-class Bench {
-
-  @Benchmark
-  def doSearch(): Unit = {
-    Main.doSearch()
-  }
-}
 
 object Main extends {
 
@@ -49,8 +42,24 @@ object Main extends {
 
   }
 
-  def doSearch(): Unit = {
-    ranges.search(ip)
+  def searchArrayBuffer(): Unit = {
+    val search: List[String] = ranges.searchArrayBuffer(ip)
+    search
+  }
+
+  def searchArrayBufferWithoutToList(): Unit = {
+    val search = ranges.searchArrayBufferWithoutToList(ip)
+    search
+  }
+
+  def searchList(): Unit = {
+    val search: List[String] = ranges.searchList(ip)
+    search
+  }
+
+  def searchListTailRecursive(): Unit = {
+    val search: List[String] = ranges.searchListTailRecursive(ip)
+    search
   }
 
   def getPath(path: String) = getClass.getResource(path).toURI
@@ -98,7 +107,7 @@ object Main extends {
       for {
         (userId, ips) <- transactions
         ip <- ips
-        network ← ranges.search(ipToLong(InetAddress.getByName(ip)))
+        network ← ranges.searchList(ipToLong(InetAddress.getByName(ip)))
       } {
         writer.write(s"$userId\t$network\n")
       }

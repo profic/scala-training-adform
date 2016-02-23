@@ -1,5 +1,6 @@
 package com.adform.task.scala_rb_tree_for_intervals
 
+import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
 
 abstract sealed class Color
@@ -34,32 +35,13 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
 
   def isEmpty: Boolean
 
-  def search(key: Key): List[A] = {
+  def searchList(key: Key): List[A] = {
 
     val ord = implicitly[Ordering[Key]]
 
     def overlaps(a: Key, b: Key): Boolean = {
       ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
     }
-
-    // JMH shows that using ArrayBuffer can speed up to 2x-3x times compare to List
-    /*
-        val as = new ArrayBuffer[A]()
-
-        def loop(tree: Tree[A, Key]): Unit = {
-
-          if (tree != Leaf) {
-            if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left)
-            if (overlaps(tree.value.begin, tree.value.end)) {
-              as += tree.value.data
-            }
-            if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right)
-          }
-        }
-        loop(this)
-
-        as.toList
- */
 
     def loop(tree: Tree[A, Key], acc: List[A]): List[A] = {
 
@@ -74,6 +56,79 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
     loop(this, List())
   }
 
+  def searchArrayBuffer(key: Key): List[A] = {
+
+    val ord = implicitly[Ordering[Key]]
+
+    def overlaps(a: Key, b: Key): Boolean = {
+      ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
+    }
+
+    // JMH shows that using ArrayBuffer can speed up to 2x-3x times compare to List
+    val as = new ArrayBuffer[A]()
+
+    def loop(tree: Tree[A, Key]): Unit = {
+
+      if (tree != Leaf) {
+        if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left)
+        if (overlaps(tree.value.begin, tree.value.end)) {
+          as += tree.value.data
+        }
+        if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right)
+      }
+    }
+    loop(this)
+
+    as.toList
+  }
+
+  def searchArrayBufferWithoutToList(key: Key): ArrayBuffer[A] = {
+
+    val ord = implicitly[Ordering[Key]]
+
+    def overlaps(a: Key, b: Key): Boolean = {
+      ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
+    }
+
+    // JMH shows that using ArrayBuffer can speed up to 2x-3x times compare to List
+    val as = new ArrayBuffer[A]()
+
+    def loop(tree: Tree[A, Key]): Unit = {
+
+      if (tree != Leaf) {
+        if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left)
+        if (overlaps(tree.value.begin, tree.value.end)) {
+          as += tree.value.data
+        }
+        if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right)
+      }
+    }
+    loop(this)
+    as
+  }
+
+  def searchListTailRecursive(key: Key): List[A] = {
+
+    val ord = implicitly[Ordering[Key]]
+
+    def overlaps(a: Key, b: Key): Boolean = {
+      ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
+    }
+
+    def loop(acc: List[A], rest: List[Tree[A, Key]]): List[A] = {
+
+      rest match {
+        case Nil        => acc
+        case tree :: ts =>
+
+          val _ts: List[Tree[A, Key]] = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) tree.left :: ts else ts
+          val _ts2: List[Tree[A, Key]] = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
+          val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
+          loop(theesRes, _ts2)
+      }
+    }
+    loop(List(), List(this))
+  }
 
   def add(elem: I): T = {
 
@@ -167,7 +222,6 @@ object Tree {
       Interval(0, 12, "6")
     )
 
-    println(tree12.search(6))
   }
 
   def unapply[A, I](t: T[A, I]): Option[(Color, Interval[A, I], Tree[A, I], Tree[A, I])] = {

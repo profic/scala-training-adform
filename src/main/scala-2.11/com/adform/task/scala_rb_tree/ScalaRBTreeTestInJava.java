@@ -17,12 +17,27 @@ public class ScalaRBTreeTestInJava {
                 .forks(1)
                 .build();
         new Runner(opt).run();
+
     }
 
     @Benchmark
-    public static void doSearch() {
-//        com.adform.task.scala_rb_tree_for_intervals_with_long_key.Main.doSearch();
-        Main.doSearch();
+    public static void searchArrayBuffer() {
+        Main.searchArrayBuffer();
     }
+    @Benchmark
+    public static void searchArrayBufferWithoutToList() {
+        Main.searchArrayBufferWithoutToList();
+    }
+
+    @Benchmark
+    public static void searchList() {
+        Main.searchList();
+    }
+
+    @Benchmark
+    public static void searchListTailRecursive() {
+        Main.searchListTailRecursive();
+    }
+
 
 }
