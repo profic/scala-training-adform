@@ -23,13 +23,13 @@ object Main extends {
   val rangesLines = rangesSource.getLines().toList
 
   val ranges = rangesLines.map(_.split("-|\t"))
-    .foldLeft(Tree[String]())((tree, splitted) => {
+    .foldLeft(rbtreeimperativeapproach.Tree[String]())((tree, splitted) => {
 
       val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
       val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
       val networkName = splitted(2)
 
-      tree.add(Interval(rangeBegin, rangeEnd, networkName))
+      tree.add(rbtreeimperativeapproach.Interval(rangeBegin, rangeEnd, networkName))
     })
 
   def main(args: Array[String]) {
@@ -66,13 +66,13 @@ object Main extends {
     val rangesLines = rangesSource.getLines().toList
 
     val ranges = rangesLines.map(_.split("-|\t"))
-      .foldLeft(Tree[String]())((tree, splitted) => {
+      .foldLeft(rbtreeimperativeapproach.Tree[String]())((tree, splitted) => {
 
         val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
         val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
         val networkName = splitted(2)
 
-        tree.add(Interval(rangeBegin, rangeEnd, networkName))
+        tree.add(rbtreeimperativeapproach.Interval(rangeBegin, rangeEnd, networkName))
       })
 
     type Network = String

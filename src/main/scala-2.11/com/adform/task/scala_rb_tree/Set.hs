@@ -58,7 +58,8 @@ balance B (T R a (T R _ _ _) x b) y (T R c z d)
 balance B (T R a (T R _ _ _) x b) y c = T B a x (T R b y c)
 balance B a x (T R b y c (T R _ _ _)) = T B (T R a x b) y c
 -- single rotation
-balance B (T R a x (T R b y c)) z d | B a x (T R (T R b y c) z d) = T B (T R a x b) y (T R c z d)
+balance B (T R a x (T R b y c)) z d
+                        | B a x (T R (T R b y c) z d) = T B (T R a x b) y (T R c z d)
 -- double rotation
 balance color a x b = T color a x b
 
