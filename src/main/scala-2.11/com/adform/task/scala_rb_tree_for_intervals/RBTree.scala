@@ -18,7 +18,7 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
 
   var loopCnt = 0
 
-  type Tr = Tree[A, Key]
+  type T = Tree[A, Key]
 
   type I = Interval[A, Key]
 
@@ -30,9 +30,9 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
 
   def value: I
 
-  def left: Tr
+  def left: T
 
-  def right: Tr
+  def right: T
 
   def isEmpty: Boolean
 
@@ -121,23 +121,17 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
       rest match {
         case Nil        => acc
         case tree :: ts =>
-          val theesRes: List[A] = tree match {
-            case _: T if overlaps(tree.value.begin, tree.value.end) ⇒ tree.value.data :: acc
-            case _                                                  ⇒ acc
-          }
-          loop(theesRes, tree.left :: tree.right :: ts)
 
-        // todo:
-        //          val _ts: List[Tree[A, Key]] = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) tree.left :: ts else ts
-        //          val _ts2: List[Tree[A, Key]] = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
-        //          val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
-        //          loop(theesRes, _ts2)
+          val _ts: List[Tree[A, Key]] = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) tree.left :: ts else ts
+          val _ts2: List[Tree[A, Key]] = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
+          val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
+          loop(theesRes, _ts2)
       }
     }
     loop(List(), List(this))
   }
 
-  def add(elem: I): Tr = {
+  def add(elem: I): T = {
 
     def balancedAdd(t: Tree[A, Key]): Tree[A, Key] =
       if (t.isEmpty) T(R, elem, t, t)
@@ -145,22 +139,22 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
       else if (elem > t.value) balanceRight(t.color, t.value, t.left, balancedAdd(t.right))
       else t
 
-    def rotate(z: I, y: I, x: I, a: Tr, b: Tr, c: Tr, d: Tr): Tr = {
+    def rotate(z: I, y: I, x: I, a: T, b: T, c: T, d: T): T = {
       T(R, y, T(B, x, a, b), T(B, z, c, d))
     }
-    def balanceLeft(c: Color, z: I, l: Tr, r: Tr) = (c, l, r) match {
+    def balanceLeft(c: Color, z: I, l: T, r: T) = (c, l, r) match {
       case (B, T(R, y, T(R, x, a, b), c), d) => rotate(z, y, x, a, b, c, d)
       case (B, T(R, x, a, T(R, y, b, c)), d) => rotate(z, y, x, a, b, c, d)
       case _                                 => T(c, z, l, r)
     }
 
-    def balanceRight(c: Color, x: I, l: Tr, r: Tr) = (c, l, r) match {
+    def balanceRight(c: Color, x: I, l: T, r: T) = (c, l, r) match {
       case (B, a, T(R, y, b, T(R, z, c, d))) => rotate(z, y, x, a, b, c, d)
       case (B, a, T(R, z, T(R, y, b, c), d)) => rotate(z, y, x, a, b, c, d)
       case _                                 => T(c, x, l, r)
     }
 
-    def blacken(t: Tr): Tr = T(B, t.value, t.left, t.right)
+    def blacken(t: T): T = T(B, t.value, t.left, t.right)
 
     blacken(balancedAdd(this))
   }
@@ -198,7 +192,6 @@ case class T[A, Key](color: Color,
     val leftMax: Key = if (left != Leaf) ord.max(left.max, value.end) else value.end
     val rightMax: Key = if (right != Leaf) ord.max(right.max, value.end) else value.end
     ord.max(leftMax, rightMax)
-
   }
 
   override def min: Key = _min
@@ -222,14 +215,6 @@ case object Leaf extends Tree[Nothing, Nothing] {
   override def max = fail("An empty tree.")
 }
 
-object Empty {
-
-  def unapply[A, I](t: T[A, I]): Option[Nothing] = {
-    None
-  }
-
-}
-
 object Tree {
 
   var creationCount = 0
@@ -238,53 +223,16 @@ object Tree {
 
   def main(args: Array[String]) {
 
+    val tree12 = Tree(
+      Interval(1, 4, "1"),
+      Interval(4, 11, "2"),
+      Interval(5, 10, "3"),
+      Interval(3, 9, "4"),
+      Interval(2, 5, "5"),
+      Interval(0, 12, "6")
+    )
 
-    Tree(Interval(1, 4, "1")) match {
-      case Tree(_, _, x, Leaf) ⇒ {
-        println("tree")
-        x match {
-          case Tree(_, _, _, Leaf) ⇒ println("leaf tree???Omg")
-          //          case Leaf                ⇒ println("Leaf blyat")
-        }
-      }
-    }
   }
-
-  //  implicit class TreeOps[A, Key <% Ordered[Key]](t: Tree[A, Key]) {
-  //
-  //    def search(key: Key): List[A] = {
-  //
-  //      val ord = implicitly[Ordering[Key]]
-  //
-  //      def overlaps(a: Key, b: Key): Boolean = {
-  //        ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
-  //      }
-  //
-  //      def loop(acc: List[A], rest: List[Tree[A, Key]]): List[A] = {
-  //
-  //        rest match {
-  //          case Nil        => acc
-  //          case tree :: ts =>
-  //
-  //            tree match {
-  //              case Leaf ⇒
-  //            }
-  //
-  //            val _ts: List[Tree[A, Key]] = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) tree.left :: ts else ts
-  //            val _ts2: List[Tree[A, Key]] = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
-  //            val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
-  //            loop(theesRes, _ts2)
-  //        }
-  //      }
-  //      loop(List(), List(t))
-  //    }
-  //
-  //  }
-
-  def unapply[A, I](t: T[A, I]): Option[(Color, Interval[A, I], Tree[A, I], Tree[A, I])] = {
-    Some(t.color, t.value, t.left, t.right)
-  }
-
 
   def empty[A, Key](implicit ev: Key ⇒ Ordered[Key]): Tree[A, Key] =
     Leaf.asInstanceOf[Tree[A, Key]]
