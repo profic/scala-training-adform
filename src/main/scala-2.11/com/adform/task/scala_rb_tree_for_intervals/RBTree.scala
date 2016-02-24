@@ -35,7 +35,9 @@ abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
 
   def isEmpty: Boolean
 
-  def search(f: (Key,Key) ⇒ Boolean): List[A] = {
+  def notEmpty: Boolean = !isEmpty
+
+  def search(f: (Key, Key) ⇒ Boolean): List[A] = {
 
     val ord = implicitly[Ordering[Key]]
 
@@ -46,8 +48,8 @@ abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
         case tree :: ts =>
 
           // ugly if-else because can't match on Leaf (invariant tree)
-          val _ts = if (tree.left != Leaf && f(tree.left.min, tree.left.max)) tree.left :: ts else ts
-          val _ts2 = if (tree.right != Leaf && f(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
+          val _ts = if (tree.left.notEmpty && f(tree.left.min, tree.left.max)) tree.left :: ts else ts
+          val _ts2 = if (tree.right.notEmpty && f(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
           val theesRes = if (f(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
           loop(theesRes, _ts2)
       }
@@ -104,12 +106,12 @@ case class T[A, Key](color: Color,
   val ord: Ordering[Key] = implicitly[Ordering[Key]]
 
   val _min: Key =
-    if (left == Leaf) value.begin
+    if (left.isEmpty) value.begin
     else left.min
 
   val _max: Key = {
-    val leftMax: Key = if (left != Leaf) ord.max(left.max, value.end) else value.end
-    val rightMax: Key = if (right != Leaf) ord.max(right.max, value.end) else value.end
+    val leftMax: Key = if (left.notEmpty) ord.max(left.max, value.end) else value.end
+    val rightMax: Key = if (right.notEmpty) ord.max(right.max, value.end) else value.end
     ord.max(leftMax, rightMax)
   }
 
