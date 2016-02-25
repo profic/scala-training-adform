@@ -134,6 +134,8 @@ case object Leaf extends Tree[Nothing, Nothing] {
   override def min = fail("An empty tree.")
 
   override def max = fail("An empty tree.")
+
+  override def search(f: (Nothing, Nothing) => Boolean): List[Nothing] = Nil
 }
 
 object Tree {
