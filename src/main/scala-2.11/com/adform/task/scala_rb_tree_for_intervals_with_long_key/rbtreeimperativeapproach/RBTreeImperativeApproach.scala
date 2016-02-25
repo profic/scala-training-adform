@@ -11,9 +11,9 @@ case object B extends Color
   * A Red-Black Tree.
   */
 
-abstract sealed class Tree[A] {
+abstract sealed class RBTreeImperativeApproach[A] {
 
-  type T = Tree[A]
+  type T = RBTreeImperativeApproach[A]
 
   type I = Interval[A]
 
@@ -54,7 +54,7 @@ abstract sealed class Tree[A] {
     loop(this)
     as.toList
 */
-    def loop(tree: Tree[A], acc: List[A]): List[A] = {
+    def loop(tree: RBTreeImperativeApproach[A], acc: List[A]): List[A] = {
       if (tree == Leaf) acc
       else {
         val rightRes = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left, acc) else acc
@@ -72,18 +72,33 @@ abstract sealed class Tree[A] {
     def balance(color: Color, el: I, l: T, r: T) = (color, l, el, r) match {
 
 
-
-
-      //    B (T R (T R a x b) y c) z d         =  T R (T B a x b) y (T B c z d)
+      //    B (T R a (T R _ _ _) x b) y (T R c z d) = T R (T B a x b) y (T B c z d)
+      case (B, T(R, a@T(R, _, _, _), x, b), y, T(R, c, z, d)) => T(R, T(B, a, x, b), y, T(B, c, z, d))
+      //    B (T R a x b (T R _ _ _)) y (T R c z d) = T R (T B a x b) y (T B c z d)
+      case (B, T(R, a, x, b@T(R, _, _, _)), y, T(R, c, z, d)) => T(R, T(B, a, x, b), y, T(B, c, z, d))
+      //    B (T R a x b) y (T R c (T R _ _ _) z d) = T R (T B a x b) y (T B c z d)
+      case (B, T(R, a, x, b), y, T(R, c@T(R, _, _, _), z, d)) => T(R, T(B, a, x, b), y, T(B, c, z, d))
+      //    B (T R a x b) y (T R c z d (T R _ _ _)) =         T R (T B a x b) y (T B c z d)
+      case (B, T(R, a, x, b), y, T(R, c, z, d@T(R, _, _, _))) => T(R, T(B, a, x, b), y, T(B, c, z, d))
+      //    B (T R a (T R _ _ _) x b) y c = T B a x (T R b y c)
+      case (B, T(R, a@T(R, _, _, _), x, b), y, c) => T(B, a, x, T(R, b, y, c))
+      //    B a x (T R b y c (T R _ _ _)) = T B (T R a x b) y c
+      case (B, a, x, T(R, b, y, c@T(R, _, _, _))) => T(B, T(R, a, x, b), y, c)
+      //    B (T R a x (T R b y c)) z d =       T B (T R a x b) y (T R c z d)
+      case (B, T(R, a, x, T(R, b, y, c)), z, d) => T(B, T(R, a, x, b), y, T(R, c, z, d))
+      //    B a x (T R (T R b y c) z d) = T B (T R a x b) y (T R c z d)
+      case (B, a, x, T(R, T(R, b, y, c), z, d)) => T(B, T(R, a, x, b), y, T(R, c, z, d))
+      //    balance color a x b = T color a x b
+      case (c, a, x, b) => T(c, a, x, b)
 
 
     }
 
 
-    def balancedAdd(t: Tree[A]): Tree[A] =
+    def balancedAdd(t: RBTreeImperativeApproach[A]): RBTreeImperativeApproach[A] =
       if (t.isEmpty) T(R, t, elem, t)
-      //      else if (elem < t.value) balanceLeft(t.color, t.value, balancedAdd(t.left), t.right)
-      //      else if (elem > t.value) balanceRight(t.color, t.value, t.left, balancedAdd(t.right))
+      else if (elem < t.value) balance(t.color, t.value, balancedAdd(t.left), t.right)
+      else if (elem > t.value) balance(t.color, t.value, t.left, balancedAdd(t.right))
       else t
 
     //    def rotate(z: I, y: I, x: I, a: T, b: T, c: T, d: T): T = {
@@ -118,9 +133,9 @@ case class Interval[A](begin: Long, end: Long, data: A) extends Ordered[Interval
 }
 
 case class T[A](color: Color,
-                left: Tree[A],
+                left: RBTreeImperativeApproach[A],
                 value: Interval[A],
-                right: Tree[A]) extends Tree[A] {
+                right: RBTreeImperativeApproach[A]) extends RBTreeImperativeApproach[A] {
   def isEmpty = false
 
   val _min: Long =
@@ -138,7 +153,7 @@ case class T[A](color: Color,
   override def max: Long = _max
 }
 
-case object Leaf extends Tree[Nothing] {
+case object Leaf extends RBTreeImperativeApproach[Nothing] {
   def color: Color = B
 
   def value = fail("An empty tree.")
@@ -154,11 +169,11 @@ case object Leaf extends Tree[Nothing] {
   override def max = fail("An empty tree.")
 }
 
-object Tree {
+object RBTreeImperativeApproach {
 
   def main(args: Array[String]) {
 
-    val tree12 = Tree(
+    val tree12 = RBTreeImperativeApproach(
       Interval(1, 4, "1"),
       Interval(4, 11, "2"),
       Interval(5, 10, "3"),
@@ -170,9 +185,9 @@ object Tree {
     println(tree12.search(6))
   }
 
-  def empty[A]: Tree[A] = Leaf.asInstanceOf[Tree[A]]
+  def empty[A]: RBTreeImperativeApproach[A] = Leaf.asInstanceOf[RBTreeImperativeApproach[A]]
 
-  def apply[A](xs: Interval[A]*): Tree[A] = {
+  def apply[A](xs: Interval[A]*): RBTreeImperativeApproach[A] = {
     var r = empty[A]
     for (x <- xs) r = r.add(x)
     r

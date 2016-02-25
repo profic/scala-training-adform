@@ -4,7 +4,7 @@ import java.io._
 import java.net.InetAddress
 import java.nio.file.{Files, Path, Paths}
 
-import org.openjdk.jmh.annotations.Benchmark
+import com.adform.task.scala_rb_tree_for_intervals_with_long_key.rbtreeimperativeapproach.RBTreeImperativeApproach
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -22,15 +22,32 @@ object Main extends {
   val rangesSource = readResource("/ranges.tsv")
   val rangesLines = rangesSource.getLines().toList
 
-  val ranges = rangesLines.map(_.split("-|\t"))
-    .foldLeft(rbtreeimperativeapproach.Tree[String]())((tree, splitted) => {
+  private val splitted: List[Array[String]] = rangesLines.map(_.split("-|\t"))
+
+  var start = System.currentTimeMillis()
+
+  val ranges = splitted.foldLeft(Tree[String]())((tree, splitted) => {
 
       val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
       val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
       val networkName = splitted(2)
 
-      tree.add(rbtreeimperativeapproach.Interval(rangeBegin, rangeEnd, networkName))
+      tree.add(Interval(rangeBegin, rangeEnd, networkName))
     })
+
+  println(s"Time for func: ${System.currentTimeMillis() - start}")
+
+  start = System.currentTimeMillis()
+  var ranges2 = splitted.foldLeft(RBTreeImperativeApproach[String]())((tree, splitted) => {
+
+    val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
+    val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
+    val networkName = splitted(2)
+
+    tree.add(rbtreeimperativeapproach.Interval(rangeBegin, rangeEnd, networkName))
+  })
+
+  println(s"Time for imperative: ${System.currentTimeMillis() - start}")
 
   def main(args: Array[String]) {
 
@@ -66,13 +83,13 @@ object Main extends {
     val rangesLines = rangesSource.getLines().toList
 
     val ranges = rangesLines.map(_.split("-|\t"))
-      .foldLeft(rbtreeimperativeapproach.Tree[String]())((tree, splitted) => {
+      .foldLeft(Tree[String]())((tree, splitted) => {
 
         val rangeBegin = ipToLong(InetAddress.getByName(splitted(0)))
         val rangeEnd = ipToLong(InetAddress.getByName(splitted(1)))
         val networkName = splitted(2)
 
-        tree.add(rbtreeimperativeapproach.Interval(rangeBegin, rangeEnd, networkName))
+        tree.add(Interval(rangeBegin, rangeEnd, networkName))
       })
 
     type Network = String
