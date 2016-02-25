@@ -20,24 +20,38 @@ public class ScalaRBTreeTestInJava {
 
     }
 
-    @Benchmark
-    public static void searchArrayBuffer() {
-        Main.searchArrayBuffer();
-    }
-    @Benchmark
-    public static void searchArrayBufferWithoutToList() {
-        Main.searchArrayBufferWithoutToList();
-    }
+//    @Benchmark
+//    public void createTreeFunctionalScala() {
+//        BenchmarkTreeCreationHelper.createTreeFunctional();
+//    }
+//
+//    @Benchmark
+//    public void createTreeImperativeScala() {
+//        BenchmarkTreeCreationHelper.createTreeImperative();
+//    }
+//
+//
+//    @Benchmark
+//    public static void searchArrayBuffer() {
+//        Main.searchArrayBuffer();
+//    }
+//    @Benchmark
+//    public static void searchArrayBufferWithoutToList() {
+//        Main.searchArrayBufferWithoutToList();
+//    }
+//
+//    @Benchmark
+//    public static void searchList() {
+//        Main.searchList();
+//    }
+
+//    @Benchmark
+//    public static void searchListTailRecursive() {
+//        Main.searchListTailRecursive();
+//    }
 
     @Benchmark
-    public static void searchList() {
-        Main.searchList();
+    public void searchListTailRecursiveParallel() {
+        Main.searchListTailRecursiveParallel();
     }
-
-    @Benchmark
-    public static void searchListTailRecursive() {
-        Main.searchListTailRecursive();
-    }
-
-
 }

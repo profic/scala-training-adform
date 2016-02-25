@@ -15,6 +15,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by vladislav.molchanov on 18.02.2016.
@@ -23,6 +25,7 @@ public class TestOpenJdk {
 
     static IntervalTree tree;
     static Long key;
+    static List<Object[]> parsed;
 
     static {
         try {
@@ -34,11 +37,25 @@ public class TestOpenJdk {
                 }
             });
 
-            Files.lines(Paths.get(TestOpenJdk.class.getResource("/ranges.tsv").toURI())).map(l -> l.split("-|\t")).forEach(arr -> {
+            parsed = Files.lines(Paths.get(TestOpenJdk.class.getResource("/ranges.tsv").toURI())).map(l -> l.split("-|\t"))
+                    .map(arr -> {
+                        try {
+                            Long begin = ipToLong(InetAddress.getByName(arr[0]));
+                            Long end = ipToLong(InetAddress.getByName(arr[1]));
+                            String network = arr[2];
+                            return new Object[]{begin, end, network};
+                        } catch (UnknownHostException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+
+            parsed.forEach(arr -> {
                 try {
-                    long begin = ipToLong(InetAddress.getByName(arr[0]));
-                    long end = ipToLong(InetAddress.getByName(arr[1]));
-                    tree.insert(new Interval(begin, end), arr[2]);
+                    Long begin = (Long) arr[0];
+                    Long end = (Long) arr[1];
+                    String data = (String) arr[2];
+                    tree.insert(new Interval(begin, end), data);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -61,9 +78,29 @@ public class TestOpenJdk {
         new Runner(opt).run();
     }
 
-    @Benchmark
+    //    @Benchmark
     public static void doSearch() {
         List<IntervalNode> res = tree.findAllNodesIntersecting(new Interval(key, key));
+    }
+
+    @Benchmark
+    public static void create() {
+        IntervalTree t = new IntervalTree(new Comparator<Comparable>() {
+            @Override
+            public int compare(Comparable o1, Comparable o2) {
+                return o1.compareTo(o2);
+            }
+        });
+        parsed.forEach(arr -> {
+            try {
+                Long begin = (Long) arr[0];
+                Long end = (Long) arr[1];
+                String data = (String) arr[2];
+                tree.insert(new Interval(begin, end), data);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private static Long ipToLong(InetAddress ip) {

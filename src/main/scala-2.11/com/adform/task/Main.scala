@@ -29,7 +29,8 @@ object Main extends {
 
   var i = 0
 
-  val ranges = rangesLines.map(_.split("-|\t"))
+  val splitted: List[Array[String]] = rangesLines.map(_.split("-|\t"))
+  val ranges = splitted
     .foldLeft(Tree[String, Long]())((tree, splitted) => {
 
 //      if (i % 100000 == 0) {
@@ -81,6 +82,11 @@ object Main extends {
     search
   }
 
+
+  def searchListTailRecursiveParallel(): Unit = {
+    val search: List[String] = ranges.searchListTailRecursiveParallel(ip)
+    search
+  }
   def getPath(path: String) = getClass.getResource(path).toURI
 
   def readResource(path: String): Source = Source.fromFile(getPath(path))

@@ -10,11 +10,11 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 /**
  * Created by vladislav.molchanov on 23.02.2016.
  */
-public class ScalaTestMutableVsImmutable {
+public class ScalaTestMutableMapVsImmutable {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(ScalaTestMutableVsImmutable.class.getSimpleName())
+                .include(ScalaTestMutableMapVsImmutable.class.getSimpleName())
                 .forks(1)
                 .build();
         new Runner(opt).run();

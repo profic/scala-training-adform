@@ -5,9 +5,8 @@ package com.adform.task.scala_rb_tree_for_intervals.parallel
   */
 import scala.collection.mutable.ArrayBuffer
 import scala.language.implicitConversions
-
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Promise, Future}
+import scala.concurrent.{Await, Future, Promise}
 import scala.async.Async._
 
 abstract sealed class Color
@@ -46,6 +45,7 @@ abstract sealed class ParallelScalaRBTree[A, Key <% Ordered[Key]] {
 
     val ord = implicitly[Ordering[Key]]
 
+    @inline
     def overlaps(a: Key, b: Key): Boolean = {
       ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
     }
@@ -89,64 +89,15 @@ abstract sealed class ParallelScalaRBTree[A, Key <% Ordered[Key]] {
     as.toList
   }
 
-  def searchArrayBufferWithoutToList(key: Key): ArrayBuffer[A] = {
-
-    val ord = implicitly[Ordering[Key]]
-
-    def overlaps(a: Key, b: Key): Boolean = {
-      ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
-    }
-
-    // JMH shows that using ArrayBuffer can speed up to 2x-3x times compare to List
-    val as = new ArrayBuffer[A]()
-
-    def loop(tree: ParallelScalaRBTree[A, Key]): Unit = {
-
-      if (tree != Leaf) {
-        if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) loop(tree.left)
-        if (overlaps(tree.value.begin, tree.value.end)) {
-          as += tree.value.data
-        }
-        if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) loop(tree.right)
-      }
-    }
-    loop(this)
-    as
-  }
-
-  def searchListTailRecursive(key: Key): List[A] = {
-
-    val ord = implicitly[Ordering[Key]]
-
-    def overlaps(a: Key, b: Key): Boolean = {
-      ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
-    }
-
-    def loop(acc: List[A], rest: List[ParallelScalaRBTree[A, Key]]): List[A] = {
-
-      rest match {
-        case Nil        => acc
-        case tree :: ts =>
-
-          val _ts: List[ParallelScalaRBTree[A, Key]] = if (tree.left != Leaf && overlaps(tree.left.min, tree.left.max)) tree.left :: ts else ts
-          val _ts2: List[ParallelScalaRBTree[A, Key]] = if (tree.right != Leaf && overlaps(tree.right.min, tree.right.max)) tree.right :: _ts else _ts
-          val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
-          loop(theesRes, _ts2)
-      }
-    }
-    loop(List(), List(this))
-  }
-
   def add(elem: I): T = {
 
     def balancedAdd(t: ParallelScalaRBTree[A, Key]): ParallelScalaRBTree[A, Key] =
       if (t.isEmpty) T(R, elem, t, t)
-      else if (elem < t.value) {
-        balanceLeft(t.color, t.value, balancedAdd(t.left), t.right)
-      }
+      else if (elem < t.value) balanceLeft(t.color, t.value, balancedAdd(t.left), t.right)
       else if (elem > t.value) balanceRight(t.color, t.value, t.left, balancedAdd(t.right))
       else t
 
+    @inline
     def rotate(z: I, y: I, x: I, a: T, b: T, c: T, d: T): T = {
       T(R, y, T(B, x, a, b), T(B, z, c, d))
     }
@@ -161,7 +112,7 @@ abstract sealed class ParallelScalaRBTree[A, Key <% Ordered[Key]] {
       case (B, a, T(R, z, T(R, y, b, c), d)) => rotate(z, y, x, a, b, c, d)
       case _                                 => T(c, x, l, r)
     }
-
+    @inline
     def blacken(t: T): T = T(B, t.value, t.left, t.right)
 
     blacken(balancedAdd(this))
@@ -185,7 +136,7 @@ case class T[A, Key](color: Color,
                      right: ParallelScalaRBTree[A, Key])(implicit ev: Key ⇒ Ordered[Key]) extends ParallelScalaRBTree[A, Key] {
 
   //  if(ParallelScalaRBTree.start) {
-  ParallelScalaRBTree.creationCount += 1
+//  ParallelScalaRBTree.creationCount += 1
   //  }
 
   def isEmpty = false
