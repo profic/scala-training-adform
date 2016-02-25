@@ -39,8 +39,6 @@ abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
 
   def search(f: (Key, Key) ⇒ Boolean): List[A] = {
 
-    val ord = implicitly[Ordering[Key]]
-
     def loop(acc: List[A], rest: List[Tree[A, Key]]): List[A] = {
 
       rest match {
@@ -65,9 +63,10 @@ abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
       else if (elem > t.value) balanceRight(t.color, t.value, t.left, balancedAdd(t.right))
       else t
 
-    def rotate(z: In, y: In, x: In, a: T, b: T, c: T, d: T): T = {
+    @inline
+    def rotate(z: In, y: In, x: In, a: T, b: T, c: T, d: T): T =
       T(R, y, T(B, x, a, b), T(B, z, c, d))
-    }
+
     def balanceLeft(c: Color, z: In, l: T, r: T) = (c, l, r) match {
       case (B, T(R, y, T(R, x, a, b), c), d) => rotate(z, y, x, a, b, c, d)
       case (B, T(R, x, a, T(R, y, b, c)), d) => rotate(z, y, x, a, b, c, d)
@@ -80,6 +79,7 @@ abstract sealed class Tree[A, Key](implicit ev$1: Key => Ordered[Key]) {
       case _                                 => T(c, x, l, r)
     }
 
+    @inline
     def blacken(t: T): T = T(B, t.value, t.left, t.right)
 
     blacken(balancedAdd(this))
