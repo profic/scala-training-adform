@@ -133,6 +133,26 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
     loop(List(), List(this))
   }
 
+  def searchListTailRecursiveWithoutUglyIfElse(key: Key): List[A] = {
+
+    val ord = implicitly[Ordering[Key]]
+
+    def overlaps(a: Key, b: Key): Boolean = {
+      ord.compare(a, key) <= 0 && ord.compare(b, key) >= 0
+    }
+
+    def loop(acc: List[A], rest: List[Tree[A, Key]]): List[A] = {
+
+      rest match {
+        case Nil        => acc
+        case tree :: ts =>
+          val theesRes = if (overlaps(tree.value.begin, tree.value.end)) tree.value.data :: acc else acc
+          loop(theesRes, List(tree.left, tree.right).filter(t => !t.isEmpty && overlaps(t.min, t.max)) ::: ts)
+      }
+    }
+    loop(List(), List(this))
+  }
+
   import scala.concurrent.duration._
 
   def searchListTailRecursiveParallel(key: Key): List[A] = {
@@ -204,7 +224,7 @@ abstract sealed class Tree[A, Key <% Ordered[Key]] {
       case (B, x, a, T(R, z, T(R, y, b, c), d)) => T(B, y, T(R, x, a, b), T(R, z, c, d))
       //    balance color a x b = T color a x b
       case (c, x, a, b) =>
-//        Tree.creationCount += 1
+        //        Tree.creationCount += 1
         T(c, x, a, b)
 
     }

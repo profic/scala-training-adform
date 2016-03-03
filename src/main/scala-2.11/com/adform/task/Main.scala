@@ -82,11 +82,17 @@ object Main extends {
     search
   }
 
+  def searchListTailRecursiveWithoutUglyIfElse(): Unit = {
+    val search: List[String] = ranges.searchListTailRecursiveWithoutUglyIfElse(ip)
+    search
+  }
+
 
   def searchListTailRecursiveParallel(): Unit = {
     val search: List[String] = ranges.searchListTailRecursiveParallel(ip)
     search
   }
+
   def getPath(path: String) = getClass.getResource(path).toURI
 
   def readResource(path: String): Source = Source.fromFile(getPath(path))
@@ -132,7 +138,7 @@ object Main extends {
       for {
         (userId, ips) <- transactions
         ip <- ips
-        network ← ranges.searchList(ipToLong(InetAddress.getByName(ip)))
+        network ← ranges.searchListTailRecursiveWithoutUglyIfElse(ipToLong(InetAddress.getByName(ip)))
       } {
         writer.write(s"$userId\t$network\n")
       }

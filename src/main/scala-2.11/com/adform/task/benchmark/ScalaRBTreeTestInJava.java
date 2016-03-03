@@ -45,13 +45,18 @@ public class ScalaRBTreeTestInJava {
 //        Main.searchList();
 //    }
 
-//    @Benchmark
-//    public static void searchListTailRecursive() {
-//        Main.searchListTailRecursive();
-//    }
+    @Benchmark
+    public static void searchListTailRecursive() {
+        Main.searchListTailRecursive();
+    }
 
     @Benchmark
-    public void searchListTailRecursiveParallel() {
-        Main.searchListTailRecursiveParallel();
+    public static void searchListTailRecursiveWithoutUglyIfElse() {
+        Main.searchListTailRecursiveWithoutUglyIfElse();
     }
+//
+//    @Benchmark
+//    public void searchListTailRecursiveParallel() {
+//        Main.searchListTailRecursiveParallel();
+//    }
 }
